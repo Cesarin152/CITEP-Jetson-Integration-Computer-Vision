@@ -2,7 +2,7 @@ from ultralytics import YOLO
 import cv2
 
 model = YOLO("../models/yolo_fruits_and_vegetables_v3.pt")
-cap = cv2.VideoCapture("../Apples sorting 3.mp4")
+cap = cv2.VideoCapture("../media/Apples sorting 3.mp4")
 codec = cv2.VideoWriter_fourcc(*"XVID")
 out = cv2.VideoWriter("FruitDetection2.mp4",codec,30,(1920,1080))
 

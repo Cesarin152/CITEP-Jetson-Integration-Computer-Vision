@@ -2,7 +2,7 @@ from ultralytics import YOLO
 import cv2
 
 model = YOLO("../models/yolo11n.pt")
-cap = cv2.VideoCapture("../La central TVN.mp4")
+cap = cv2.VideoCapture("../media/La central TVN.mp4")
 codec = cv2.VideoWriter_fourcc(*"X264")
 out = cv2.VideoWriter("LaCentral_Analized.mp4",codec,30,(1920,1080))
 

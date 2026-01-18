@@ -2,7 +2,7 @@ from ultralytics import YOLO
 import cv2
 
 model = YOLO("../models/yolo11n.pt")
-cap = cv2.VideoCapture("../Cropped_walking.mp4")
+cap = cv2.VideoCapture("../media/Cropped_walking.mp4")
 codec = cv2.VideoWriter_fourcc(*"XVID")
 out = cv2.VideoWriter("AvenueDetection_Analized.mp4",codec,60,(1280,720))
 

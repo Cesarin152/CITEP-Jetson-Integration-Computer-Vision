@@ -5,7 +5,7 @@ import numpy as np
 
 
 model = YOLO("../models/yolo11n-pose.pt")
-cap = cv2.VideoCapture("../Curl de bíceps con mancuernas.mp4")
+cap = cv2.VideoCapture("../media/Curl de bíceps con mancuernas.mp4")
 codec = cv2.VideoWriter_fourcc(*"XVID")
 out = cv2.VideoWriter("BicepDetection_Analized.mp4",codec,60,(1280,720))\
 

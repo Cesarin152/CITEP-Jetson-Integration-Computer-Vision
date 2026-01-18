@@ -8,6 +8,7 @@ from PyQt5 import uic
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 MODULES_DIR = os.path.join(BASE_DIR, "modules")
 MODELS_DIR = os.path.join(BASE_DIR, "models")
+MEDIA_DIR = os.path.join(BASE_DIR, "media")
 UI_PATH = os.path.join(BASE_DIR, "app", "mainwindow.ui")
 
 # Mapeo de Scripts a Modelos y Videos requeridos
@@ -75,11 +76,11 @@ class MainWindow(QMainWindow):
                                      f"Falta el modelo requerido:\n{reqs['model']}\n\nDebe estar en: {MODELS_DIR}")
                 return
 
-            # Validar Video (se asume en la raiz del proyecto, BASE_DIR)
-            video_path = os.path.join(BASE_DIR, reqs["video"])
+            # Validar Video (se asume en la carpeta media, MEDIA_DIR)
+            video_path = os.path.join(MEDIA_DIR, reqs["video"])
             if not os.path.exists(video_path):
                 QMessageBox.warning(self, "Advertencia de Video", 
-                                    f"No se encontró el video de prueba:\n{reqs['video']}\n\nDebe estar en: {BASE_DIR}\n\nEl script podría fallar o cerrarse inmediatamente.")
+                                    f"No se encontró el video de prueba:\n{reqs['video']}\n\nDebe estar en: {MEDIA_DIR}\n\nEl script podría fallar o cerrarse inmediatamente.")
                 # No retornamos, solo advertimos, ya que el usuario podría querer usar la cámara o el script podría manejarlo.
         
         # 3. Ejecutar
