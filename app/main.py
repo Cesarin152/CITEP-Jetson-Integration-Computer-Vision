@@ -1,88 +1,96 @@
-import tkinter as tk
-import subprocess
 import sys
 import os
+import subprocess
+from PyQt5.QtWidgets import QApplication, QMainWindow, QMessageBox, QPushButton
+from PyQt5 import uic
 
-# Obtener la ruta base del proyecto (un nivel arriba de `app/`)
+# Obtener la ruta base del proyecto
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 MODULES_DIR = os.path.join(BASE_DIR, "modules")
+MODELS_DIR = os.path.join(BASE_DIR, "models")
+UI_PATH = os.path.join(BASE_DIR, "app", "mainwindow.ui")
 
-# Función que ejecuta otro script Python
-def ejecutar(script):
-    subprocess.Popen([sys.executable, script], cwd=MODULES_DIR)
-
-# -------- Ventana principal --------
-root = tk.Tk()
-root.title("Menú de Visión Artificial")
-root.geometry("500x450")        # Más alto para más botones
-root.configure(bg="white")
-
-# Título
-titulo = tk.Label(
-    root,
-    text="Seleccione un script para ejecutar",
-    bg="white",
-    fg="black",
-    font=("Arial", 18)
-)
-titulo.pack(pady=20)
-
-# ---- Estilo de botones ----
-btn_style = {
-    "width": 35,
-    "height": 2,
-    "font": ("Arial", 12)
+# Mapeo de Scripts a Modelos y Videos requeridos
+# Script Name -> { 'model': model_filename, 'video': video_filename }
+SCRIPT_REQUIREMENTS = {
+    "avenue_detection.py": {
+        "model": "yolo11n.pt",
+        "video": "Cropped_walking.mp4"
+    },
+    "pose_detection.py": {
+        "model": "yolo11n.pt",
+        "video": "La central TVN.mp4"
+    },
+    "bicep_detection.py": {
+        "model": "yolo11n-pose.pt",
+        "video": "Curl de bíceps con mancuernas.mp4"
+    },
+    "fruit_detection_1.py": {
+        "model": "yolo_fruits_and_vegetables_v3.pt",
+        "video": "Apples sorting 2.mp4"
+    },
+    "fruit_detection_2.py": {
+        "model": "yolo_fruits_and_vegetables_v3.pt",
+        "video": "Apples sorting 3.mp4"
+    }
 }
 
-# ---- Botones ----
-tk.Button(
-    root, text="Avenue Detection",
-    command=lambda: ejecutar("avenue_detection.py"),
-    **btn_style
-).pack(pady=5)
+class MainWindow(QMainWindow):
+    def __init__(self):
+        super().__init__()
+        # Cargar archivo .ui
+        try:
+            uic.loadUi(UI_PATH, self)
+        except FileNotFoundError:
+            QMessageBox.critical(None, "Error Fatal", f"No se encontró el archivo de interfaz:\n{UI_PATH}")
+            sys.exit(1)
 
-tk.Button(
-    root, text="Pose Detection (La Central)",
-    command=lambda: ejecutar("pose_detection.py"),
-    **btn_style
-).pack(pady=5)
+        # Conectar botones
+        self.btn_avenue.clicked.connect(lambda: self.ejecutar("avenue_detection.py"))
+        self.btn_pose.clicked.connect(lambda: self.ejecutar("pose_detection.py"))
+        self.btn_bicep.clicked.connect(lambda: self.ejecutar("bicep_detection.py"))
+        self.btn_fruit1.clicked.connect(lambda: self.ejecutar("fruit_detection_1.py"))
+        self.btn_fruit2.clicked.connect(lambda: self.ejecutar("fruit_detection_2.py"))
+        
+        # Botón Salir
+        self.btn_exit.clicked.connect(self.close)
 
-tk.Button(
-    root, text="Bicep Detection",
-    command=lambda: ejecutar("bicep_detection.py"),
-    **btn_style
-).pack(pady=5)
+    def ejecutar(self, script_name):
+        """Ejecuta un script tras validar sus requisitos."""
+        
+        # 1. Validar existencia del script
+        script_path = os.path.join(MODULES_DIR, script_name)
+        if not os.path.exists(script_path):
+            QMessageBox.critical(self, "Error", f"No se encontró el script:\n{script_name}\n\nRuta: {script_path}")
+            return
 
-tk.Button(
-    root, text="Fruit Detection 1",
-    command=lambda: ejecutar("fruit_detection_1.py"),
-    **btn_style
-).pack(pady=5)
+        # 2. Validar requisitos (Modelo y Video)
+        if script_name in SCRIPT_REQUIREMENTS:
+            reqs = SCRIPT_REQUIREMENTS[script_name]
+            
+            # Validar Modelo
+            model_path = os.path.join(MODELS_DIR, reqs["model"])
+            if not os.path.exists(model_path):
+                QMessageBox.critical(self, "Error de Modelo", 
+                                     f"Falta el modelo requerido:\n{reqs['model']}\n\nDebe estar en: {MODELS_DIR}")
+                return
 
-tk.Button(
-    root, text="Fruit Detection 2",
-    command=lambda: ejecutar("fruit_detection_2.py"),
-    **btn_style
-).pack(pady=5)
+            # Validar Video (se asume en la raiz del proyecto, BASE_DIR)
+            video_path = os.path.join(BASE_DIR, reqs["video"])
+            if not os.path.exists(video_path):
+                QMessageBox.warning(self, "Advertencia de Video", 
+                                    f"No se encontró el video de prueba:\n{reqs['video']}\n\nDebe estar en: {BASE_DIR}\n\nEl script podría fallar o cerrarse inmediatamente.")
+                # No retornamos, solo advertimos, ya que el usuario podría querer usar la cámara o el script podría manejarlo.
+        
+        # 3. Ejecutar
+        try:
+            # Ejecutamos con cwd=MODULES_DIR para que los scripts encuentren ../models correctamente
+            subprocess.Popen([sys.executable, script_name], cwd=MODULES_DIR)
+        except Exception as e:
+            QMessageBox.critical(self, "Error de Ejecución", f"Ocurrió un error al lanzar el script:\n{str(e)}")
 
-# Botón Salir
-tk.Button(
-    root, text="Salir",
-    command=root.quit,
-    bg="#d9534f",
-    fg="white",
-    font=("Arial", 12),
-    width=15
-).pack(pady=20)
-
-# ---- Texto inferior derecho ----
-creditos = tk.Label(
-    root,
-    text="Demo elaborada por Victor Lau y Cesar Vigil",
-    bg="white",
-    fg="gray",
-    font=("Arial", 10)
-)
-creditos.place(relx=1.0, rely=1.0, anchor="se", x=-10, y=-10)
-
-root.mainloop()
+if __name__ == "__main__":
+    app = QApplication(sys.argv)
+    window = MainWindow()
+    window.show()
+    sys.exit(app.exec_())
