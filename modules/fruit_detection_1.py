@@ -1,25 +1,10 @@
-from ultralytics import YOLO
-import cv2
+from modules.detector_base import Detector
 
-model = YOLO("../models/yolo_fruits_and_vegetables_v3.pt")
-cap = cv2.VideoCapture("../media/Apples sorting 2.mp4")
-codec = cv2.VideoWriter_fourcc(*"XVID")
-out = cv2.VideoWriter("FruitDetection1.mp4",codec,25,(640,360))
+class FruitDetector1(Detector):
+    def __init__(self, model_path, video_path):
+        super().__init__(model_path, video_path)
 
-while cap.isOpened():
-    ret, frame = cap.read()
-    if not ret:
-        break
-
-    results = model(frame)
-    annotated = results[0].plot()
-    out.write(annotated)
-
-    cv2.imshow("YOLOv11 Webcam", annotated)
-
-    if cv2.waitKey(1) & 0xFF == ord('q'):
-        break
-
-cap.release()
-out.release()
-cv2.destroyAllWindows()
+    def process_frame(self, frame):
+        results = self.model(frame, conf=self.conf_threshold)
+        annotated_frame = results[0].plot()
+        return annotated_frame
